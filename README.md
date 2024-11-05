@@ -20,7 +20,7 @@ Disaster-AI is a web application that provides real-time, relevant responses to 
 ### Prerequisites:
 Before running the project, ensure you have the following installed:
 - [Node.js](https://nodejs.org/) (v14 or above)
-- [MongoDB](https://www.mongodb.com/) (for local database, or use a cloud-based MongoDB service like Atlas)
+- [GoogleSearchEngine](Get API keys using your google account)
 - [npm](https://www.npmjs.com/) (comes with Node.js)
 
 ---
@@ -37,7 +37,8 @@ Before running the project, ensure you have the following installed:
 
    In the root directory (for the backend):
    ```bash
-   npm install
+   cd server
+   pip install -r requirements.txt 
    ```
 
    Navigate to the `client` folder (for the frontend):
@@ -49,7 +50,8 @@ Before running the project, ensure you have the following installed:
 3. **Set up environment variables**:
    Create a `.env` file in the root directory and add your configuration details (API keys, database connection strings, etc.). Example:
    ```
-   MONGO_URI=your-mongodb-uri
+   GOOGLE_API_KEY=YOUR_GOOGLE_API_KEY
+   CSE_ID=YOUR_GOOGLE_CSE_ID
    PORT=5000
    REACT_APP_API_URL=http://localhost:5000
    ```
@@ -57,7 +59,8 @@ Before running the project, ensure you have the following installed:
 4. **Run the app**:
    First, start the server (back-end):
    ```bash
-   npm start
+   cd server
+   python app.py
    ```
 
    Then, in another terminal, start the front-end (React):
