@@ -9,3 +9,4 @@ server/Who
 server/Hurricane helene helplines search_results.txt
 server/pinata.js
 server/__pycache__
+rag_data/
