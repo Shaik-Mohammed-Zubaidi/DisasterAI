@@ -10,7 +10,7 @@ load_dotenv()
 
 
 # Define the data directory for local files
-data_folder = './rag_data'
+data_folder = './rag_data/search_results'
 
 def load_documents():
 
