@@ -3,41 +3,44 @@ import requests
 from dotenv import load_dotenv
 import os
 
-query_counter = 0
+# to implement later
+# query_counter = 0
 
 load_dotenv()
 
-# Define the folders for local files
-search_results_folder = './search_results'
-webpage_contents_folder = './webpage_contents'
 
-# Function to load content from all text files in a folder
-def load_files_from_folder(folder_path):
-    documents = []
-    if not os.path.exists(folder_path):
-        print(f"Folder {folder_path} does not exist.")
+# Define the data directory for local files
+data_folder = './rag_data'
+
+def load_documents():
+
+    # Function to load content from all text files in a directory recursively
+    def load_files_from_folder(folder_path):
+        documents = []
+        if not os.path.exists(folder_path):
+            print(f"Folder {folder_path} does not exist.")
+            return documents
+
+        for dirpath, _, filenames in os.walk(folder_path):
+            for filename in filenames:
+                if filename.endswith('.txt'):
+                    file_path = os.path.join(dirpath, filename)
+                    with open(file_path, 'r', encoding='utf-8') as file:
+                        file_content = file.read()
+                        documents.append(file_content)
+                        print(f"Loaded content from {file_path}")
         return documents
 
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
-        if os.path.isfile(file_path) and filename.endswith('.txt'):
-            with open(file_path, 'r', encoding='utf-8') as file:
-                file_content = file.read()
-                documents.append(file_content)
-                print(f"Loaded content from {filename}")
+    # Load documents from the root folder recursively
+    try:
+        documents = load_files_from_folder(data_folder)
+        print(f"Total documents loaded: {len(documents)}")
+    except Exception as e:
+        print(f"Error loading documents: {e}")
+
+    print(f"Loaded {len(documents)} documents")
     return documents
 
-# Load documents from both folders
-try:
-    documents = []
-    documents += load_files_from_folder(search_results_folder)
-    documents += load_files_from_folder(webpage_contents_folder)
-    
-    print(f"Total documents loaded: {len(documents)}")
-except Exception as e:
-    print(f"Error loading documents: {e}")
-
-print(f"Loaded {len(documents)} documents")
 
 
 ### RAG pipeline
@@ -53,18 +56,9 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 print("Loading SentenceTransformer model...")
 # model = SentenceTransformer('Alibaba-NLP/gte-base-en-v1.5', trust_remote_code=True)
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-print("Sent Model loaded successfully.")
+print("SentenceTransformer Model loaded successfully.")
 
-# Convert documents to embeddings
-print("Converting documents to embeddings...")
-document_embeddings = model.encode(documents, normalize_embeddings=True)
-print(document_embeddings)
-print("Documents converted to embeddings.")
 
-# Initialize FAISS index
-d = document_embeddings.shape[1]
-index = faiss.IndexFlatL2(d)
-index.add(np.array(document_embeddings))
 # # Check if MPS is available, otherwise default to CPU
 # device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
 # print(f"Using device: {device}")
@@ -85,7 +79,18 @@ t5_model = T5ForConditionalGeneration.from_pretrained(t5_model_name)
 
 print("Models loaded successfully.")
 
-def get_answer_rag(query):
+def get_answer_rag(query, documents):
+    # Convert documents to embeddings
+    print("Converting documents to embeddings...")
+    document_embeddings = model.encode(documents, normalize_embeddings=True)
+    # print(document_embeddings)
+    print("Documents converted to embeddings.")
+
+    # Initialize FAISS index
+    d = document_embeddings.shape[1]
+    index = faiss.IndexFlatL2(d)
+    index.add(np.array(document_embeddings))
+
     # Function to rerank documents using Rank-BERT
     def rerank_with_rank_bert(query, retrieved_docs):
         inputs = []
@@ -128,15 +133,13 @@ def get_answer_rag(query):
         print("Answer generated.")
         return answer
 
-    # Test the pipeline
-    query = "number to call for hurricane disastor help?"
+    # Test the pipeline with the query
     answer = rag_pipeline(query)
-
+    print(f"Answer: {answer}")
 
     # Save the query and answer to a text file
-
-    # Create a folder based on the first word of the query
-    folder_name = './query_answers'
+    # folder_name = './query_answers'
+    folder_name = os.path.join(data_folder, 'query_answers')
     os.makedirs(folder_name, exist_ok=True)
 
     # Define the filename
@@ -148,3 +151,4 @@ def get_answer_rag(query):
         file.write(f"Answer: {answer}\n")
 
     print(f"Query and answer saved to {filename}")
+    return answer
