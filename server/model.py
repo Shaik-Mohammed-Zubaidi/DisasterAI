@@ -88,7 +88,7 @@ def get_answer_rag(query, documents):
 
     # Initialize FAISS index
     d = document_embeddings.shape[1]
-    index = faiss.IndexFlatL2(d)
+    index = faiss.IndexFlatIP(d)
     index.add(np.array(document_embeddings))
 
     # Function to rerank documents using Rank-BERT
@@ -113,14 +113,15 @@ def get_answer_rag(query, documents):
         print("Generating answer...")
         prompt = f"use the following CONTEXT to answer the QUESTION: {context} QUESTION: {query}"
         inputs = t5_tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
-        outputs = t5_model.generate(inputs.input_ids, max_length=150, num_beams=5, early_stopping=True)
+        outputs = t5_model.generate(inputs.input_ids, max_length=200, num_beams=10, early_stopping=True)
         return t5_tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     # RAG pipeline with FAISS, reranking, and T5 model
     def rag_pipeline(query):
         # Step 1: Retrieve relevant documents from FAISS
         query_embedding = model.encode([query])
-        D, I = index.search(query_embedding, k=5)  # Retrieve top 5 documents
+        D, I = index.search(query_embedding, k=10)  # Retrieve top 5 documents
+        
         retrieved_docs = [documents[i] for i in I[0]]
         print("Documents retrieved.")
 

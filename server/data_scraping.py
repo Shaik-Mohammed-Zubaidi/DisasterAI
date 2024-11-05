@@ -25,8 +25,9 @@ def google_search(query, api_key, cse_id, num_results=5, exactTerms=''):
         raise Exception(f"Error {response.status_code}: {response.text}")
 
 def extract_links_from_results(results):
-    """Extracts links from search results."""
-    return [item['link'] for item in results.get('items', [])]
+    """Extracts only .gov links from search results."""
+    return [item['link'] for item in results.get('items', []) if '.gov' in item['link']]
+
 
 def format_results_as_text(results):
     """Formats the Google search results into a string."""
@@ -42,13 +43,13 @@ def format_results_as_text(results):
 API_KEY = os.getenv('GOOGLE_API_KEY')
 CSE_ID = os.getenv('CSE_ID')
 NO_OF_RESULTS = 10
-EXACT_TERMS = 'call'
+# EXACT_TERMS = 'call'
 
 data_folder = './rag_data'
 
-query = "Hurricane helene helplines"
+# query = "Hurricane helene helplines"
 def get_search_results(query):
-    results = google_search(query, API_KEY, CSE_ID, NO_OF_RESULTS, EXACT_TERMS)
+    results = google_search(query, API_KEY, CSE_ID, NO_OF_RESULTS)
 
     # Format search results to text
     formatted_results = format_results_as_text(results)
