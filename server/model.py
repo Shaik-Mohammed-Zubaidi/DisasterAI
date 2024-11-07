@@ -2,6 +2,8 @@
 import requests
 from dotenv import load_dotenv
 import os
+import re
+
 
 # to implement later
 # query_counter = 0
@@ -10,7 +12,7 @@ load_dotenv()
 
 
 # Define the data directory for local files
-data_folder = './rag_data/search_results'
+data_folder = './rag_data'
 
 def load_documents():
 
@@ -34,7 +36,7 @@ def load_documents():
     # Load documents from the root folder recursively
     try:
         documents = load_files_from_folder(data_folder)
-        print(f"Total documents loaded: {len(documents)}")
+        print(f"Total documents loaded: {len(documents)}", documents)
     except Exception as e:
         print(f"Error loading documents: {e}")
 
@@ -113,14 +115,21 @@ def get_answer_rag(query, documents):
         print("Generating answer...")
         prompt = f"use the following CONTEXT to answer the QUESTION: {context} QUESTION: {query}"
         inputs = t5_tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
-        outputs = t5_model.generate(inputs.input_ids, max_length=200, num_beams=10, early_stopping=True)
+        outputs = t5_model.generate(inputs.input_ids, max_length=300, num_beams=10, early_stopping=True)
         return t5_tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    # Function to extract phone numbers from text
+    def extract_phone_numbers(text):
+        # Regex pattern for phone numbers (adjust as needed for different formats)
+        phone_pattern = r'\(?\b\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b'
+        phone_numbers = list(set(re.findall(phone_pattern, text)))
+        return " ".join(phone_numbers)
 
     # RAG pipeline with FAISS, reranking, and T5 model
     def rag_pipeline(query):
         # Step 1: Retrieve relevant documents from FAISS
         query_embedding = model.encode([query])
-        D, I = index.search(query_embedding, k=10)  # Retrieve top 5 documents
+        D, I = index.search(query_embedding, k=5)  # Retrieve top 5 documents
         
         retrieved_docs = [documents[i] for i in I[0]]
         print("Documents retrieved.")
@@ -131,7 +140,10 @@ def get_answer_rag(query, documents):
         # Step 3: Generate an answer using T5
         context = " ".join(reranked_docs)  # Joining reranked docs as context
         answer = generate_answer_with_t5(query, context)
-        print("Answer generated.")
+        phone_numbers = extract_phone_numbers(answer)
+        print("Answer generated.", phone_numbers, answer)
+        if("number" in query):
+            return phone_numbers
         return answer
 
     # Test the pipeline with the query

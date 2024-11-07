@@ -20,8 +20,42 @@ Disaster-AI is a web application that provides real-time, relevant responses to 
 ### Prerequisites:
 Before running the project, ensure you have the following installed:
 - [Node.js](https://nodejs.org/) (v14 or above)
-- [GoogleSearchEngine](Get API keys using your google account)
 - [npm](https://www.npmjs.com/) (comes with Node.js)
+- Google Programmable Search Engine setup (see below)
+
+---
+
+### Google Programmable Search Engine (CSE) Setup
+To integrate Google’s Programmable Search Engine (CSE) into Disaster-AI, follow these steps to set up CSE and obtain your API key and CSE_ID:
+
+1. **Access Google Cloud Platform**:
+   - Go to the [Google Cloud Platform Console](https://console.cloud.google.com/).
+   - Sign in with your Google account.
+   - Create a new project if needed, or select an existing one.
+
+2. **Enable the Custom Search API**:
+   - Navigate to "APIs & Services" on the left menu.
+   - Search for "Custom Search API" and enable it.
+
+3. **Obtain Your API Key**:
+   - Go to "Credentials" in the left menu.
+   - Click "Create credentials" and select "API key."
+   - Copy the generated API key.
+
+4. **Create a Programmable Search Engine**:
+   - Go to the [Google Custom Search Engine control panel](https://cse.google.com/cse/all).
+   - Click "Add" to create a new search engine.
+   - Provide a name and specify which websites to include in the search.
+   - Click "Create."
+
+5. **Find Your CSE_ID**:
+   - Go to the "Overview" page of your search engine.
+   - Locate the "Search Engine ID" (or "cx"), which will be your `CSE_ID`.
+
+**Key Points**:
+   - **API Key Usage**: Include your API key as a parameter in API requests to the custom search engine.
+   - **CSE_ID Usage**: Use `CSE_ID` (or "cx") to identify your specific search engine in API calls.
+   - **Customization**: Further customize your search engine within the CSE control panel, adjusting features like ranking and look & feel.
 
 ---
 
@@ -35,13 +69,13 @@ Before running the project, ensure you have the following installed:
 
 2. **Install dependencies**:
 
-   In the root directory (for the backend):
+   For the backend:
    ```bash
    cd server
    pip install -r requirements.txt 
    ```
 
-   Navigate to the `client` folder (for the frontend):
+   For the frontend:
    ```bash
    cd client
    npm install
@@ -57,13 +91,13 @@ Before running the project, ensure you have the following installed:
    ```
 
 4. **Run the app**:
-   First, start the server (back-end):
+   Start the server (back-end):
    ```bash
    cd server
    python app.py
    ```
 
-   Then, in another terminal, start the front-end (React):
+   Start the front-end (React):
    ```bash
    cd client
    npm start
@@ -75,12 +109,10 @@ Before running the project, ensure you have the following installed:
 
 ### How to Use:
 1. Open your browser and navigate to `http://localhost:3000`.
-2. Type a disaster-related query in the provided text box.
-3. Hit submit to get real-time responses related to your question.
+2. Type a disaster-related query in the text box, such as "hurricane helpline number."
+3. Submit to receive real-time responses related to your question.
 
 ---
 
 ### Contributing:
-Feel free to contribute by submitting issues or pull requests. Any feedback or suggestions to improve the app are welcome!
-
----# DisasterAI
+Feel free to contribute by submitting issues or pull requests. Feedback and suggestions to improve the app are always welcome!
