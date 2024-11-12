@@ -3,6 +3,8 @@ import os
 import re
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+import pdfplumber
+import fitz
 # from pinata import upload_text_file  # Import the upload function
 
 load_dotenv()
@@ -27,6 +29,27 @@ def google_search(query, api_key, cse_id, num_results=5, exactTerms=''):
 def extract_links_from_results(results):
     """Extracts only .gov links from search results."""
     return [item['link'] for item in results.get('items', []) if '.gov' in item['link']]
+
+
+def extract_pdf_content(url):
+    """Downloads a PDF file from a URL and extracts its text content."""
+    response = requests.get(url)
+    response.raise_for_status()  # Ensure request was successful
+
+    # Write the PDF content to a temporary file
+    temp_pdf_path = './temp_pdf_file.pdf'
+    with open(temp_pdf_path, 'wb') as pdf_file:
+        pdf_file.write(response.content)
+
+    # Extract text from the PDF
+    text = ""
+    with fitz.open(temp_pdf_path) as pdf_document:
+        for page in pdf_document:
+            text += page.get_text()
+
+    # Clean up temporary file
+    os.remove(temp_pdf_path)
+    return text
 
 
 def format_results_as_text(results):
@@ -78,19 +101,23 @@ def get_search_results(query):
     # Loop over each URL and extract content
     for idx, url in enumerate(links, start=1):
         try:
-            response = requests.get(url)
-            response.raise_for_status()  # Ensure request was successful
-            soup = BeautifulSoup(response.content, 'html.parser')
-
-            # Extract the main content from the page (assuming <p> tags)
-            content = "\n".join(paragraph.get_text() for paragraph in soup.find_all('p'))
-
-            # Save the content to a local text file
-            content_file_path = os.path.join(content_folder, f"webpage_content_{idx}.txt")
-            with open(content_file_path, 'w', encoding='utf-8') as file:
-                file.write(content)
-
-            print(f"Content from {url} saved to {content_file_path}")
+            if url.endswith('.pdf'):
+                # Handle PDF files
+                pdf_content = extract_pdf_content(url)
+                content_file_path = os.path.join(content_folder, f"pdf_content_{idx}.txt")
+                with open(content_file_path, 'w', encoding='utf-8') as file:
+                    file.write(pdf_content)
+                print(f"PDF content from {url} saved to {content_file_path}")
+            else:
+                # Handle regular web pages
+                response = requests.get(url)
+                response.raise_for_status()
+                soup = BeautifulSoup(response.content, 'html.parser')
+                content = "\n".join(paragraph.get_text() for paragraph in soup.find_all('p'))
+                content_file_path = os.path.join(content_folder, f"webpage_content_{idx}.txt")
+                with open(content_file_path, 'w', encoding='utf-8') as file:
+                    file.write(content)
+                print(f"Content from {url} saved to {content_file_path}")
 
         except requests.RequestException as e:
             print(f"Failed to retrieve content from {url}: {e}")

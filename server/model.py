@@ -113,7 +113,7 @@ def get_answer_rag(query, documents):
     # Function to generate an answer using T5 model
     def generate_answer_with_t5(query, context):
         print("Generating answer...")
-        prompt = f"use the following CONTEXT to answer the QUESTION: {context} QUESTION: {query}"
+        prompt = f"QUESTION: {query}, CONTEXT: {context}"
         inputs = t5_tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
         outputs = t5_model.generate(inputs.input_ids, max_length=300, num_beams=10, early_stopping=True)
         return t5_tokenizer.decode(outputs[0], skip_special_tokens=True)
